@@ -1,0 +1,5 @@
+{
+    "ruby.rubocop.executePath": "",
+    "ruby.rubocop.configFilePath": "/home/atila-admin/sys_ruby/.rubocop.yml",
+    "ruby.rubocop.onSave": true
+}
