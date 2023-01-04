@@ -45,7 +45,7 @@ mesa.imprimir
 
 # começando jogo
 # jogo = Jogo.new(nome1, nome2)
-# jogo.iniciar
+# jogo.inciar
 # jogo.sortear_cartas
 # jogo.sortear_jogador
 # exit = false
@@ -58,3 +58,4 @@ mesa.imprimir
 	# jogo.remover_criatura
 	# jogo.verificar_vencendor
 # end
+

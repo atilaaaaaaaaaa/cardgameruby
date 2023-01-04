@@ -1,16 +1,34 @@
 require 'mesa'
+require 'monstro'
+require 'terreno'
+require 'faker'
 # Classe para controlar ações principais do jogo
 class Jogo
-  attr_reader :player1, :player2
+  attr_reader :player1, :player2, :cartas, :monstros, :terrenos
 
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
+    @monstros = []
+    @terrenos = []
+  end
+
+  def gerando_cartas(quantidade)
+    # loop de criaturas
+    (1..quantidade).each do
+      monstros << Monstro.new(Faker::Games::DnD.monster, [1, 2, 3].sample, [0, 1, 2, 3, 4].sample,
+                              [1, 2, 3, 4, 5].sample)
+    end
+    # loop de terrenos
+    (1..(quantidade / 2)).each do
+      terrenos << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample)
+    end
+    'Cartas geradas com sucesso'
   end
 
   def iniciar
     puts 'Criando cartas...'
-    raise 'Falta implementar.'
+    # 120 cartas?
   end
 
   def sortear_cartas
