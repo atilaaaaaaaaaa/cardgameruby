@@ -1,15 +1,19 @@
 require 'jogo'
 require 'mesa'
+require 'jogador'
 
 puts 'Digite o nome do player1:'
 nome1 = gets.chomp
+player1 = Jogador.new(nome1)
 puts 'Digite o nome do player2:'
 nome2 = gets.chomp
+player2 = Jogador.new(nome2)
 
-jogo = Jogo.new(nome1, nome2)
-
-mesa = Mesa.new(jogo)
-mesa.imprimir
+jogo = Jogo.new(player1, player2)
+jogo.iniciar
+puts jogo.player1.mao.map{|a| a.nome}
+puts 'Cartas do outro jogador'
+puts jogo.player2.mao.flatten.map{|a| a.nome}
 
 # Distribuição de 7 cartas
 # Mostrar cartas parao o jogador

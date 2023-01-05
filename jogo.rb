@@ -6,6 +6,9 @@ require 'faker'
 class Jogo
   attr_reader :player1, :player2, :cartas, :monstros, :terrenos
 
+  QTD_MAO = 7
+  QTD_JOGO = 120
+
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
@@ -20,20 +23,26 @@ class Jogo
                               [1, 2, 3, 4, 5].sample)
     end
     # loop de terrenos
-    (1..(quantidade / 2)).each do
-      terrenos << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample)
-    end
     'Cartas geradas com sucesso'
   end
 
   def iniciar
-    puts 'Criando cartas...'
-    # 120 cartas?
+    puts gerando_cartas(QTD_JOGO)
+    puts sortear_cartas
+  end
+
+  def todas_cartas
+    terrenos + monstros
   end
 
   def sortear_cartas
-    puts 'Sorteando cartas...'
-    raise 'Falta implementar.'
+    while player1.mao.size < QTD_MAO
+      @player1.mao.push(monstros.pop)
+      @player2.mao.push(monstros.pop)
+      player1.mao << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample) if player1.mao.size < QTD_MAO
+      player2.mao << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample) if player2.mao.size < QTD_MAO
+    end
+    'Cartas sorteadas com sucesso'
   end
 
   def sortear_jogador
