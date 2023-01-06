@@ -11,10 +11,10 @@ player2 = Jogador.new(nome2)
 
 jogo = Jogo.new(player1, player2)
 jogo.iniciar
-puts jogo.player1.mao.map{|a| a.nome}
-puts 'Cartas do outro jogador'
-puts jogo.player2.mao.flatten.map{|a| a.nome}
 
+# puts jogo.player1.mao.map{|a| a.nome}
+# puts 'Cartas do outro jogador'
+# puts jogo.player2.mao.flatten.map{|a| a.nome}
 # Distribuição de 7 cartas
 # Mostrar cartas parao o jogador
 # Definir quem começa
@@ -27,26 +27,6 @@ puts jogo.player2.mao.flatten.map{|a| a.nome}
 # ...Sorteando quem começa
 # ...Distribuindo cartas
 
-# TURNO PLAYER 1
-# opcoes
-# 1 - comprar carta
-# 2 - abandonar o jogo
-# 3 - ver cartas
-#   A - Carta 1(Custo:4) - Criatura Zumbi - (2/3)
-#   B - Carta 2(Custo:1) - Criatura Zumbi - (1/1)
-#   C - Carta 3(Custo:2) - Criatura Zumbi - (2/1)
-#   D - Carta 4(Custo:3) - Criatura Vampiro - (3/1)
-#   E - Carta 5(Custo:4) - Criatura Vampiro - (2/3)
-#   F - Carta 6(Custo: 0) - Terreno
-#   G - Carta 7(Custo: 0) - Terreno
-# 4 - Atacar
-#   A - Carta 1(Indisponivel)
-#   B - Carta 2(Disponivel)
-# 5 - Defender
-#   A - Carta 1(Indisponivel)
-#   B - Carta 2(Disponivel)
-# 6 - Terminar turno
-
 # começando jogo
 # jogo = Jogo.new(nome1, nome2)
 # jogo.inciar
@@ -54,8 +34,8 @@ puts jogo.player2.mao.flatten.map{|a| a.nome}
 # jogo.sortear_jogador
 # exit = false
 # while(exit)
-	# jogo.desvirar_cartas
-	# jogo.mostrar_status
+# jogo.desvirar_cartas
+# jogo.mostrar_status
 	# jogo.mostrar_opções
 	# opcao = gets.chomp
 	# jogo.selecionar_opcao(opcao)
