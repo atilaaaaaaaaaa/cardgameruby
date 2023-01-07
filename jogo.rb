@@ -5,32 +5,19 @@ require 'faker'
 require 'jogador'
 # Classe para controlar ações principais do jogo
 class Jogo
-  attr_reader :player1, :player2, :cartas, :monstros, :terrenos, :jogador_da_vez
+  attr_reader :player1, :player2, :cartas, :jogador_da_vez
 
   QTD_MAO = 7
-  QTD_JOGO = 120
 
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
-    @monstros = []
-    @terrenos = []
     @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 4 => :atacar, 5 => :defender, 6 => :terminar_turno }
   end
 
-  def gerando_cartas(quantidade)
-    # loop de criaturas
-    (1..quantidade).each do
-      monstros << Monstro.new(Faker::Games::DnD.monster, [1, 2, 3].sample, [0, 1, 2, 3, 4].sample,
-                              [1, 2, 3, 4, 5].sample)
-    end
-    # loop de terrenos
-    'Cartas geradas com sucesso'
-  end
-
   def iniciar
-    puts gerando_cartas(QTD_JOGO)
-    puts sortear_cartas
+    #player1.grimorio.comprar_carta(7)
+    #player2.grimorio.comprar_carta(7)
     puts sortear_jogador
 
     until terminado?
@@ -44,20 +31,6 @@ class Jogo
 
   def terminado?
     player1.vida <= 0 || player2.vida <= 0
-  end
-
-  def todas_cartas
-    terrenos + monstros
-  end
-
-  def sortear_cartas
-    while player1.mao.size < QTD_MAO
-      @player1.mao.push(monstros.pop)
-      @player2.mao.push(monstros.pop)
-      @player1.mao << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample) if player1.mao.size < QTD_MAO
-      @player2.mao << Terreno.new(%w[Pantano Planicie Ilha Montanha Floresta].sample) if player2.mao.size < QTD_MAO
-    end
-    'Cartas sorteadas com sucesso'
   end
 
   def sortear_jogador
@@ -99,11 +72,13 @@ class Jogo
 
   def mostrar_mesa
     puts 'MESA'
-    puts "Turno #{player1} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}]"
+    puts "Grimorio: #{player1.grimorio.monstros.size} monstros / #{player1.grimorio.terrenos.size} terrenos"
+    puts "Turno #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}]"
     puts 'Terrenos: 0/2'
     puts 'Criaturas P1: [Carta 1(Indisponivel), Carta 2(Disponivel)]'
     puts ''
-    puts "Turno #{player2} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}]"
+    puts "Grimorio: ##{player2.grimorio.monstros.size} monstros / #{player2.grimorio.terrenos.size} terrenos"
+    puts "Turno #{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}]"
     puts 'Terrenos: 1/1'
     puts 'Criaturas P1: [Carta 1(Disponivel)]'
   end
@@ -111,13 +86,9 @@ class Jogo
   def selecionar_opcao(opcao)
     puts opcao
     puts @opcoes
-    self.send(@opcoes[opcao.to_i])
+    send(@opcoes[opcao.to_i])
     puts 'Selecionando opção...'
     raise 'Falta implementar.'
-  end
-
-  def comprar_carta
-    puts "Comprei uma carta"
   end
 
   def remover_criatura
