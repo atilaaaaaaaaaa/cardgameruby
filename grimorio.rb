@@ -1,3 +1,5 @@
+require 'debug'
+
 # Classe que reflete deck de cartas dos jogadores
 class Grimorio
   attr_accessor :todos, :monstros, :terrenos
@@ -9,6 +11,7 @@ class Grimorio
     @terrenos = []
     @todos = []
     preparar_grimorio
+    embaralhar
   end
 
   def preparar_grimorio
@@ -21,11 +24,12 @@ class Grimorio
     end
   end
 
-  def comprar_carta(qtd)
+  def comprar_carta(qtd = 1)
     @todos.pop(qtd)
   end
 
   def embaralhar
+    #binding.break
     # @monstros.each { |_monstro| @todos.push(@monstros.pop) } unless @monstros.empty?
     # @terrenos.each { |_monstro| @todos.push(@terrenos.pop) } unless @terrenos.empty?
     @monstros.each do |monstro|
@@ -35,8 +39,9 @@ class Grimorio
     @terrenos.each do |terreno|
       @todos.push(terreno)
     end
+    # limpando os terrenos
     @terrenos = []
-    @todos.shuffle
+    @todos.shuffle!
   end
 
 end

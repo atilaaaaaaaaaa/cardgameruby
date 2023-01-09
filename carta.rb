@@ -6,4 +6,12 @@ class Carta
     @nome = nome
     @custo = custo
   end
+
+  def monstro?
+    is_a?(Monstro)
+  end
+
+  def terreno?
+    is_a?(Terreno)
+  end
 end

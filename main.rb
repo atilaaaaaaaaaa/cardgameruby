@@ -1,6 +1,7 @@
 require 'jogo'
 require 'mesa'
 require 'jogador'
+require 'colorize'
 
 puts 'Digite o nome do player1:'
 nome1 = gets.chomp

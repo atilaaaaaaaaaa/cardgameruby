@@ -3,25 +3,31 @@ require 'monstro'
 require 'terreno'
 require 'faker'
 require 'jogador'
+require 'colorize'
+
 # Classe para controlar ações principais do jogo
 class Jogo
-  attr_reader :player1, :player2, :cartas, :jogador_da_vez
+  attr_reader :player1, :player2, :cartas
 
   QTD_MAO = 7
 
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
-    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 4 => :atacar, 5 => :defender, 6 => :terminar_turno }
+    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :atacar, 5 => :defender, 6 => :terminar_turno }
   end
 
   def iniciar
-    #player1.grimorio.comprar_carta(7)
-    #player2.grimorio.comprar_carta(7)
     puts sortear_jogador
+    @player1.grimorio.comprar_carta(7).each do |carta|
+      @player1.mao.push(carta)
+    end
+    @player2.grimorio.comprar_carta(7).each do |carta|
+      @player2.mao.push(carta)
+    end
 
     until terminado?
-      mostrar_mesa
+      mostrar_mesa_v2
       mostrar_opcoes
       opcao = gets.chomp
       selecionar_opcao(opcao)
@@ -34,26 +40,47 @@ class Jogo
   end
 
   def sortear_jogador
-    @jogador_da_vez = [player1, player2].sample
-    puts "#{@jogador_da_vez.nome} começa!"
+    jogador_aux = [player1, player2].sample
+    if jogador_aux == player1
+      player1.turno = true
+    else
+      player2.turno = true
+    end
+    puts "#{jogador_aux.nome} começa!"
+  end
+
+  def comprar_carta(qtd = 1)
+    jogador_da_vez.mao.push(jogador_da_vez.grimorio.comprar_carta(qtd))
+  end
+
+  def jogador_da_vez
+    if player1.turno == true
+      @player1
+    elsif player2.turno == true
+      @player2
+    else 
+      puts 'Nenhum jogador foi sorteado!'
+    end
   end
 
   def mostrar_cartas
     letra = 'A'
-    @jogador_da_vez.mao.each do |carta|
+    jogador_da_vez.mao.each do |carta|
       if carta.is_a?(Monstro)
         puts " #{letra} - #{carta.nome} - (Custo:#{carta.custo}) - (#{carta.ataque}/#{carta.defesa})"
       end
       puts " #{letra} - #{carta.nome} - Terreno" if carta.is_a?(Terreno)
       letra.next!
     end
-    nil
+    puts 'V - Voltar'
+    opcao = gets.chomp
+    return if opcao == 'V'
   end
 
   def mostrar_opcoes
     puts 'Mostrando opções...'
     puts ''
-    puts "TURNO #{@jogador_da_vez.nome}"
+    puts "TURNO #{jogador_da_vez.nome}"
     @opcoes.each do |key, value|
       puts "#{key} - #{value}"
     end
@@ -72,23 +99,67 @@ class Jogo
 
   def mostrar_mesa
     puts 'MESA'
-    puts "Grimorio: #{player1.grimorio.monstros.size} monstros / #{player1.grimorio.terrenos.size} terrenos"
-    puts "Turno #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}]"
+    puts "Grimorio @todos: #{player1.grimorio.todos.size}"
+    puts "#{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}]".colorize(:blue)
+    puts "Cartas na mão: #{player1.mao.size} cartas"
     puts 'Terrenos: 0/2'
     puts 'Criaturas P1: [Carta 1(Indisponivel), Carta 2(Disponivel)]'
     puts ''
-    puts "Grimorio: ##{player2.grimorio.monstros.size} monstros / #{player2.grimorio.terrenos.size} terrenos"
-    puts "Turno #{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}]"
+    puts "Grimorio @todos: #{player2.grimorio.todos.size}"
+    puts "#{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}]".colorize(:blue)
+    puts "Cartas na mão: #{player2.mao.size} cartas"
     puts 'Terrenos: 1/1'
     puts 'Criaturas P1: [Carta 1(Disponivel)]'
+  end
+
+  def imprimir_cartas(cartas)
+    separator =    '_____        '
+    header =      ""
+    default =     '|@@@@@|      '
+    atk_dfs =     ''
+    nome = ''
+
+    cartas.each do |carta|
+      header << "|@@@ #{carta.custo}|      "
+      atk_dfs << (carta.monstro? ? "| #{carta.ataque}/#{carta.defesa} |      " : default)
+      nome << "#{carta.nome[0..6]}       "
+    end
+    puts"
+     #{separator * cartas.size}
+    #{header}
+    #{default * cartas.size}
+    #{default * cartas.size}
+    #{atk_dfs}
+    #{default * cartas.size}
+    #{nome}"
+  end
+
+  def mostrar_mesa_v2
+    puts "########################### #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
+    puts imprimir_cartas(player1.mao)
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#"
+    puts "#" 
+    puts "#" 
+    puts "#" 
+    puts "#" 
+    puts "#" 
+    puts "#                                                                              #" 
+    puts "########################### puts #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
+
   end
 
   def selecionar_opcao(opcao)
     puts opcao
     puts @opcoes
-    send(@opcoes[opcao.to_i])
+    send(@opcoes[opcao.to_i], )
     puts 'Selecionando opção...'
-    raise 'Falta implementar.'
   end
 
   def remover_criatura
