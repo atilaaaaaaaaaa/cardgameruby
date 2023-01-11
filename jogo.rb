@@ -16,6 +16,7 @@ class Jogo
     @player2 = player2
     @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :atacar, 5 => :defender,
                 6 => :terminar_turno }
+    @alerts = []
   end
 
   def iniciar
@@ -51,7 +52,8 @@ class Jogo
   end
 
   def comprar_carta(qtd = 1)
-    jogador_da_vez.mao.push(jogador_da_vez.grimorio.comprar_carta(qtd))
+    jogador_da_vez.mao.concat(jogador_da_vez.grimorio.comprar_carta(qtd))
+
   end
 
   def jogador_da_vez
@@ -92,8 +94,24 @@ class Jogo
   end
 
   def baixar_carta(carta)
+    return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados.size
+
     jogador_da_vez.cartas_baixadas.push(carta)
     jogador_da_vez.mao.delete(carta)
+  end
+
+  def abandonar_jogo
+    puts 'Tem certeza que quer sair do jogo?(Y/N)'
+    opcao = gets.chomp
+    case opcao
+    when 'Y'
+      exit
+    when 'N'
+      nil
+    else
+      puts 'Opção inválida'
+      nil
+    end
   end
 
   def mostrar_opcoes
@@ -162,8 +180,8 @@ class Jogo
   end
 
   def mostrar_mesa_v2
-    system 'clear'
-    puts "########################### #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:red)
+    # system 'clear'
+    puts "################################# #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] #################################".colorize(:green)
     puts imprimir_terrenos_criaturas(player1.cartas_baixadas)
     puts '#'
     puts '#'
@@ -180,6 +198,7 @@ class Jogo
     puts '#'
     puts '#'
     puts "########################### puts #{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
+    puts @alerts.join(', ').colorize(:red)
     nil
   end
 

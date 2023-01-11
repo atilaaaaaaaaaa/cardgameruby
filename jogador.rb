@@ -13,4 +13,12 @@ class Jogador
     @turno = false
     @cartas_baixadas = []
   end
+
+  def terrenos_baixados
+    cartas_baixadas.map { |carta| carta if carta.is_a?(Terreno) }.compact
+  end
+
+  def criaturas_baixados
+    cartas_baixadas.map { |carta| carta if carta.is_a?(Monstro) }.compact
+  end
 end
