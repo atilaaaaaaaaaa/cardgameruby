@@ -18,6 +18,7 @@ class Jogo
     @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :atacar, 5 => :defender,
                 6 => :terminar_turno }
     @alerts = []
+    @criaturas_atacantes = []
   end
 
   def iniciar
@@ -66,6 +67,12 @@ class Jogo
     end
   end
 
+  def oponente
+    return player1 if player1.turno == false
+
+    player2
+  end
+
   def mostrar_cartas
     cartas_hash = {}
     letra = 'A'
@@ -95,14 +102,6 @@ class Jogo
 
   def baixar_carta(carta)
     return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados.size
-
-    # result = Regras.mana_insuficiente(carta, jogador_da_vez)
-    # if result.nil?
-    #   return
-    # else
-    #   @alerts << result
-    # end
-
     jogador_da_vez.cartas_baixadas.push(carta)
     jogador_da_vez.terrenos_baixados.first(carta.custo).map { |terreno| terreno.virar }
     jogador_da_vez.mao.delete(carta)
@@ -131,22 +130,6 @@ class Jogo
     end
     nil
   end
-
-  # def mostrar_mesa
-  #   puts 'MESA'
-  #   puts "Grimorio @todos: #{player1.grimorio.todos.size}"
-  #   puts "#{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}]".colorize(:blue)
-  #   puts "Cartas na mão: #{player1.mao.size} cartas"
-  #   puts 'Terrenos: 0/2'
-  #   puts 'Criaturas P1: [Carta 1(Indisponivel), Carta 2(Disponivel)]'
-  #   puts ''
-  #   puts "Grimorio @todos: #{player2.grimorio.todos.size}"
-  #   puts "#{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}]".colorize(:blue)
-  #   puts "Cartas na mão: #{player2.mao.size} cartas"
-  #   puts 'Terrenos: 1/1'
-  #   puts 'Criaturas P1: [Carta 1(Disponivel)]'
-  #   nil
-  # end
 
   def imprimir_terrenos_criaturas(cartas)
     monstros = cartas.map { |carta| carta if carta.monstro? }.compact || []
@@ -181,7 +164,6 @@ class Jogo
   end
 
   def mostrar_mesa_v2
-    # system 'clear'
     puts "################################# #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] #################################".colorize(:green)
     puts imprimir_terrenos_criaturas(player1.cartas_baixadas)
     puts '#'
@@ -210,6 +192,42 @@ class Jogo
     send(@opcoes[opcao.to_i])
     puts 'Selecionando opção...'
     nil
+  end
+
+  def mostrar_opcoes_ataque
+    cartas_hash = {}
+    letra = 'A'
+    opcao = ''
+    while opcao != 'G'
+      jogador_da_vez.criaturas_baixadas.each do |carta|
+        if carta.desvirada?
+          puts " #{letra} - #{carta.nome} - (Custo:#{carta.custo}) - (#{carta.ataque}/#{carta.defesa})"
+          cartas_hash[letra] = carta # guardando num hash as opções de cada carta
+        end
+        letra.next!
+      end
+      opcao = gets.chomp
+      puts 'V - Voltar'
+      puts 'G - Finalizar ataque'
+
+      case opcao
+      when 'V'
+        return
+      when *cartas_hash.keys
+        @criaturas_atacantes << cartas_hash[opcao]
+      when 'G'
+        atacar(@criaturas_atacantes)
+      else
+        raise 'else'
+      end
+    end
+
+    nil
+  end
+
+  def combate(atacante, defensor)
+    defensor.defesa = (defensor.defesa - atacante.ataque)
+    atacante.defesa = (atacante.defesa - defensor.ataque)
   end
 
   def remover_criatura

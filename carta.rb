@@ -23,4 +23,9 @@ class Carta
   def virada?
     @virada
   end
+
+  def desvirada?
+    !@virada
+  end
+
 end
