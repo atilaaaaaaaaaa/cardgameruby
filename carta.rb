@@ -1,10 +1,11 @@
 # Responsável pelas cartas do jogo
 class Carta
-  attr_reader :nome, :custo
+  attr_reader :nome, :custo, :virada
 
   def initialize(nome, custo)
     @nome = nome
     @custo = custo
+    @virada = false
   end
 
   def monstro?
@@ -13,5 +14,13 @@ class Carta
 
   def terreno?
     is_a?(Terreno)
+  end
+
+  def virar
+    @virada = true
+  end
+
+  def virada?
+    @virada
   end
 end

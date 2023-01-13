@@ -4,6 +4,7 @@ require 'terreno'
 require 'faker'
 require 'jogador'
 require 'colorize'
+require 'regras'
 
 # Classe para controlar ações principais do jogo
 class Jogo
@@ -53,7 +54,6 @@ class Jogo
 
   def comprar_carta(qtd = 1)
     jogador_da_vez.mao.concat(jogador_da_vez.grimorio.comprar_carta(qtd))
-
   end
 
   def jogador_da_vez
@@ -96,7 +96,15 @@ class Jogo
   def baixar_carta(carta)
     return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados.size
 
+    # result = Regras.mana_insuficiente(carta, jogador_da_vez)
+    # if result.nil?
+    #   return
+    # else
+    #   @alerts << result
+    # end
+
     jogador_da_vez.cartas_baixadas.push(carta)
+    jogador_da_vez.terrenos_baixados.first(carta.custo).map { |terreno| terreno.virar }
     jogador_da_vez.mao.delete(carta)
   end
 
@@ -121,17 +129,6 @@ class Jogo
     @opcoes.each do |key, value|
       puts "#{key} - #{value}"
     end
-    # puts '1 - comprar carta'
-    # puts '2 - abandonar o jogo'
-    # puts '3 - ver cartas'
-    # puts "#{mostrar_cartas}"
-    # puts '4 - Atacar'
-    # puts '  A - Carta 1(Indisponivel)'
-    # puts '  B - Carta 2(Disponivel)'
-    # puts '5 - Defender'
-    # puts '  A - Carta 1(Indisponivel)'
-    # puts '  B - Carta 2(Disponivel)'
-    # puts '6 - Terminar turno'
     nil
   end
 
@@ -161,22 +158,26 @@ class Jogo
   def imprimir_cartas(cartas)
     separator = '_____        '
     header =      ''
-    default =     '|@@@@@|      '
+    default =     ''
     atk_dfs =     ''
     nome = ''
+    cor = :blue
 
     cartas.flatten.each do |carta|
-      header << "|@@@ #{carta.custo}|      "
-      atk_dfs << (carta.monstro? ? "| #{carta.ataque}/#{carta.defesa} |      " : default)
-      nome << "#{carta.nome[0..6]}       "
+      cor = carta.virada? ? :red : :blue
+      header << "|@@@ #{carta.custo}|      ".colorize(cor)
+      atk_dfs << ((carta.monstro? ? "| #{carta.ataque}/#{carta.defesa} |      " : '|@@@@@|      ')).colorize(cor)
+      nome << "#{carta.nome[0..6]}       ".colorize(cor)
+      default << '|@@@@@|      '.colorize(cor)
     end
-    puts "##{separator * cartas.size}
+    result = "##{separator * cartas.size}
 ##{header}
-##{default * cartas.size}
-##{default * cartas.size}
+##{default}
+##{default}
 ##{atk_dfs}
-##{default * cartas.size}
+##{default}
 ##{nome}"
+    puts result
   end
 
   def mostrar_mesa_v2
@@ -199,6 +200,7 @@ class Jogo
     puts '#'
     puts "########################### puts #{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
     puts @alerts.join(', ').colorize(:red)
+    @alerts = []
     nil
   end
 
