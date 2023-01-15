@@ -15,10 +15,11 @@ class Jogo
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
-    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :atacar, 5 => :defender,
+    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :mostrar_opcoes_ataque, 5 => :mostrar_opcoes_defesa,
                 6 => :terminar_turno }
     @alerts = []
     @criaturas_atacantes = []
+    @criaturas_defensoras = []
   end
 
   def iniciar
@@ -206,28 +207,74 @@ class Jogo
         end
         letra.next!
       end
-      opcao = gets.chomp
       puts 'V - Voltar'
       puts 'G - Finalizar ataque'
-
+      opcao = gets.chomp
+      
       case opcao
       when 'V'
         return
       when *cartas_hash.keys
         @criaturas_atacantes << cartas_hash[opcao]
+        cartas_hash[opcao].virada = true
       when 'G'
-        atacar(@criaturas_atacantes)
+        mostrar_opcoes_defesa
       else
-        raise 'else'
+        raise 'erro nas opções de ataque'
       end
     end
 
     nil
   end
 
+  def mostrar_opcoes_defesa
+    cartas_hash = {}
+    letra = 'A'
+    opcao = ''
+    while opcao != 'X'
+      oponente.criaturas_baixadas.each do |carta|
+        if carta.desvirada?
+          puts " #{letra} - #{carta.nome} - (Custo:#{carta.custo}) - (#{carta.ataque}/#{carta.defesa})"
+          cartas_hash[letra] = carta # guardando num hash as opções de cada carta
+        end
+        letra.next!
+      end
+      puts 'V - Voltar'
+      puts 'X - Finalizar defesa'
+      puts 'Z - limpar seleção'
+      opcao = gets.chomp
+      binding.break
+      case opcao
+      when 'V'
+        return
+      when *cartas_hash.keys
+        @criaturas_defensoras << cartas_hash[opcao]
+      when 'X'
+        resolver_combate
+      when 'Z'
+        @criaturas_defensoras = []
+        return
+      else
+        raise 'erro nas opções de defesa'
+      end
+    end
+
+    nil
+  end
+
+  def resolver_combate
+    @criaturas_atacantes.each_with_index do |criatura_atacante, index|
+      combate(criatura_atacante, @criaturas_defensoras[index])
+    end
+  end
+
   def combate(atacante, defensor)
-    defensor.defesa = (defensor.defesa - atacante.ataque)
-    atacante.defesa = (atacante.defesa - defensor.ataque)
+    if defensor.nil?
+      oponente.vida -= atacante.ataque
+    else
+      defensor.defesa -= atacante.ataque
+      atacante.defesa -= defensor.ataque
+    end
   end
 
   def remover_criatura

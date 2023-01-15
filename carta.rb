@@ -1,6 +1,7 @@
 # Responsável pelas cartas do jogo
 class Carta
-  attr_reader :nome, :custo, :virada
+  attr_reader :nome, :custo
+  attr_accessor :virada
 
   def initialize(nome, custo)
     @nome = nome
