@@ -29,9 +29,6 @@ class Grimorio
   end
 
   def embaralhar
-    #binding.break
-    # @monstros.each { |_monstro| @todos.push(@monstros.pop) } unless @monstros.empty?
-    # @terrenos.each { |_monstro| @todos.push(@terrenos.pop) } unless @terrenos.empty?
     @monstros.each do |monstro|
       @todos.push(monstro)
     end

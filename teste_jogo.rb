@@ -5,7 +5,7 @@ require 'debug'
 ataque = [0..20].sample
 resistencia = [1..20].sample
 
-monstro1 = Monstro.new('atacante', 1, 10, 2)
+monstro1 = Monstro.new('atacante', 1, 5, 2)
 monstro2 = Monstro.new('defensor', 1, 11, 1)
 
 atila = Jogador.new('atila')
@@ -22,7 +22,8 @@ puts 'testando defensor nulo'
 atila.turno = false
 vitorio.turno = true
 jogo.combate(monstro1, nil)
-if atila.vida == 10
+jogo.combate(monstro1, nil)
+if atila.vida == 10 && vitorio.vida == 20
   puts 'ok'
 else
   puts 'erro'

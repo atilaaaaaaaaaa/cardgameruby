@@ -15,8 +15,7 @@ class Jogo
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
-    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :mostrar_opcoes_ataque, 5 => :mostrar_opcoes_defesa,
-                6 => :terminar_turno }
+    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :mostrar_opcoes_ataque, 5 => :terminar_turno }
     @alerts = []
     @criaturas_atacantes = []
     @criaturas_defensoras = []
@@ -95,7 +94,8 @@ class Jogo
     when *cartas_hash.keys # * é um splat operator, que transforma arrays em strings separados por vírgulas(entre outras coisas)
       baixar_carta(cartas_hash[opcao])
     else
-      raise 'else'
+      @alerts << 'Opção inválida'
+      return
     end
 
     nil
@@ -150,7 +150,7 @@ class Jogo
     cartas.flatten.each do |carta|
       cor = carta.virada? ? :red : :blue
       header << "|@@@ #{carta.custo}|      ".colorize(cor)
-      atk_dfs << ((carta.monstro? ? "| #{carta.ataque}/#{carta.defesa} |      " : '|@@@@@|      ')).colorize(cor)
+      atk_dfs << ((carta.monstro? ? "| #{carta.ataque}/#{carta.pts_vida} |      " : '|@@@@@|      ')).colorize(cor)
       nome << "#{carta.nome[0..6]}       ".colorize(cor)
       default << '|@@@@@|      '.colorize(cor)
     end
@@ -165,7 +165,7 @@ class Jogo
   end
 
   def mostrar_mesa_v2
-    puts "################################# #{player1.nome} [Pv-#{player1.vida}/#{Jogador::QTD_VIDA}] #################################".colorize(:green)
+    puts "################################# #{player1.nome} [Pv #{player1.vida}/#{Jogador::QTD_VIDA}] #################################".colorize(:green)
     puts imprimir_terrenos_criaturas(player1.cartas_baixadas)
     puts '#'
     puts '#'
@@ -181,7 +181,7 @@ class Jogo
     puts '#'
     puts '#'
     puts '#'
-    puts "########################### puts #{player2.nome} [Pv-#{player2.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
+    puts "################################  #{player2.nome} [Pv #{player2.vida}/#{Jogador::QTD_VIDA}] ###########################".colorize(:blue)
     puts @alerts.join(', ').colorize(:red)
     @alerts = []
     nil
@@ -207,20 +207,22 @@ class Jogo
         end
         letra.next!
       end
-      puts 'V - Voltar'
+      puts 'V - Cancelar ataque'
       puts 'G - Finalizar ataque'
       opcao = gets.chomp
-      
+
       case opcao
       when 'V'
+        @criaturas_atacantes = []
         return
       when *cartas_hash.keys
-        @criaturas_atacantes << cartas_hash[opcao]
+        @criaturas_atacantes << cartas_hash[opcao] unless @criaturas_atacantes.include?(cartas_hash[opcao])
         cartas_hash[opcao].virada = true
       when 'G'
         mostrar_opcoes_defesa
       else
-        raise 'erro nas opções de ataque'
+        @alerts << 'Opção inválida'
+        return
       end
     end
 
@@ -228,12 +230,13 @@ class Jogo
   end
 
   def mostrar_opcoes_defesa
+    puts 'Selecione as criaturas para defender os atacantes, respectivamente.'
     cartas_hash = {}
     letra = 'A'
     opcao = ''
     while opcao != 'X'
       oponente.criaturas_baixadas.each do |carta|
-        if carta.desvirada?
+        if carta.desvirada? && carta.defesa_disponivel?
           puts " #{letra} - #{carta.nome} - (Custo:#{carta.custo}) - (#{carta.ataque}/#{carta.defesa})"
           cartas_hash[letra] = carta # guardando num hash as opções de cada carta
         end
@@ -243,12 +246,13 @@ class Jogo
       puts 'X - Finalizar defesa'
       puts 'Z - limpar seleção'
       opcao = gets.chomp
-      binding.break
       case opcao
       when 'V'
+        @criaturas_defensoras = []
         return
       when *cartas_hash.keys
-        @criaturas_defensoras << cartas_hash[opcao]
+        @criaturas_defensoras << cartas_hash[opcao] unless @criaturas_defensoras.include?(cartas_hash[opcao])
+        cartas_hash[opcao].defendendo = true
       when 'X'
         resolver_combate
       when 'Z'
@@ -272,18 +276,38 @@ class Jogo
     if defensor.nil?
       oponente.vida -= atacante.ataque
     else
-      defensor.defesa -= atacante.ataque
-      atacante.defesa -= defensor.ataque
+      defensor.pts_vida -= atacante.ataque
+      atacante.pts_vida -= defensor.ataque
     end
   end
 
   def remover_criatura
-    puts 'Removendo criatura...'
-    raise 'Falta implementar.'
+    jogador_da_vez.criaturas_baixadas.each do |criatura|
+      if criatura.pts_vida <= 0
+        jogador_da_vez.cartas_baixadas.delete(criatura)
+      else
+        criatura.pts_vida = criatura.defesa
+      end
+    end
+
+    oponente.criaturas_baixadas.each do |criatura|
+      if criatura.pts_vida <= 0
+        oponente.cartas_baixadas.delete(criatura)
+      else
+        criatura.pts_vida = criatura.defesa
+      end
+    end
   end
 
-  def verificar_vencendor
-    puts 'Verificar vencedor...'
-    raise 'Falta implementar.'
+  def terminar_turno
+    remover_criatura
+    if player1.turno == true
+      player1.turno = false
+      player2.turno = true
+    else
+      player2.turno = false
+      player1.turno = true
+    end
+    oponente.desvirar_cartas
   end
 end

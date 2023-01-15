@@ -14,6 +14,12 @@ class Jogador
     @cartas_baixadas = []
   end
 
+  def desvirar_cartas
+    cartas_baixadas.each do |carta|
+      carta.virada = false
+    end
+  end
+
   def terrenos_baixados
     cartas_baixadas.map { |carta| carta if carta.is_a?(Terreno) }.compact
   end
