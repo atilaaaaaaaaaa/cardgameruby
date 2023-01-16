@@ -15,7 +15,7 @@ class Jogo
   def initialize(player1, player2)
     @player1 = player1
     @player2 = player2
-    @opcoes = { 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :mostrar_opcoes_ataque, 5 => :terminar_turno }
+    @opcoes = { 0 => :mulligan, 1 => :comprar_carta, 2 => :abandonar_jogo, 3 => :mostrar_cartas, 4 => :mostrar_opcoes_ataque, 5 => :terminar_turno }
     @alerts = []
     @criaturas_atacantes = []
     @criaturas_defensoras = []
@@ -39,6 +39,18 @@ class Jogo
     puts 'Jogo terminou.'
   end
 
+  def mulligan
+    cartas_mao = jogador_da_vez.mao.size
+    return if cartas_mao == 1
+
+    jogador_da_vez.grimorio.add(jogador_da_vez.mao)
+    jogador_da_vez.mao = []
+
+    jogador_da_vez.grimorio.comprar_carta(cartas_mao - 1).each do |carta|
+      jogador_da_vez.mao.push(carta)
+    end
+  end
+
   def terminado?
     player1.vida <= 0 || player2.vida <= 0
   end
@@ -55,6 +67,7 @@ class Jogo
 
   def comprar_carta(qtd = 1)
     jogador_da_vez.mao.concat(jogador_da_vez.grimorio.comprar_carta(qtd))
+
   end
 
   def jogador_da_vez
@@ -103,6 +116,7 @@ class Jogo
 
   def baixar_carta(carta)
     return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados.size
+
     jogador_da_vez.cartas_baixadas.push(carta)
     jogador_da_vez.terrenos_baixados.first(carta.custo).map { |terreno| terreno.virar }
     jogador_da_vez.mao.delete(carta)
@@ -201,7 +215,7 @@ class Jogo
     opcao = ''
     while opcao != 'G'
       jogador_da_vez.criaturas_baixadas.each do |carta|
-        if carta.desvirada?
+        if carta.pode_atacar?
           puts " #{letra} - #{carta.nome} - (Custo:#{carta.custo}) - (#{carta.ataque}/#{carta.defesa})"
           cartas_hash[letra] = carta # guardando num hash as opções de cada carta
         end
@@ -309,5 +323,9 @@ class Jogo
       player1.turno = true
     end
     oponente.desvirar_cartas
+
+    jogador_da_vez.criaturas_baixadas.each do |criatura|
+      criatura.enjoo = false
+    end
   end
 end

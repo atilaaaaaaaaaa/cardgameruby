@@ -24,6 +24,13 @@ class Grimorio
     end
   end
 
+  def add(cartas)
+    cartas.each do |carta|
+      @todos.push(carta)
+    end
+    @todos.shuffle!
+  end
+
   def comprar_carta(qtd = 1)
     @todos.pop(qtd)
   end
