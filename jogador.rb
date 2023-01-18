@@ -24,6 +24,10 @@ class Jogador
     cartas_baixadas.map { |carta| carta if carta.is_a?(Terreno) }.compact
   end
 
+  def terrenos_baixados_desvirados
+    terrenos_baixados.select { |terreno| terreno.desvirada? }
+  end
+
   def criaturas_baixadas
     cartas_baixadas.map { |carta| carta if carta.is_a?(Monstro) }.compact
   end

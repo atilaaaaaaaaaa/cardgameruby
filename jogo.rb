@@ -115,10 +115,10 @@ class Jogo
   end
 
   def baixar_carta(carta)
-    return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados.size
+    return @alerts << 'Mana insuficiente' if carta.custo > jogador_da_vez.terrenos_baixados_desvirados.size
 
     jogador_da_vez.cartas_baixadas.push(carta)
-    jogador_da_vez.terrenos_baixados.first(carta.custo).map { |terreno| terreno.virar }
+    jogador_da_vez.terrenos_baixados_desvirados.first(carta.custo).map { |terreno| terreno.virar }
     jogador_da_vez.mao.delete(carta)
   end
 
@@ -261,17 +261,17 @@ class Jogo
       puts 'Z - limpar seleção'
       opcao = gets.chomp
       case opcao
-      when 'V'
+      when 'V', 'v'
         @criaturas_defensoras = []
         return
       when *cartas_hash.keys
         @criaturas_defensoras << cartas_hash[opcao] unless @criaturas_defensoras.include?(cartas_hash[opcao])
         cartas_hash[opcao].defendendo = true
-      when 'X'
+      when 'X', 'x'
         resolver_combate
-      when 'Z'
+      when 'Z', 'z'
         @criaturas_defensoras = []
-        return
+        next
       else
         raise 'erro nas opções de defesa'
       end
