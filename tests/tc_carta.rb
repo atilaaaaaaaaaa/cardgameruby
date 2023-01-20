@@ -44,11 +44,11 @@ class TestCarta < Test::Unit::TestCase
 
   def test_virada?
     @@carta.virada = false
-    assert_equal(@@carta.virada, @@carta.virada?)
+    assert_equal(false, @@carta.virada?)
   end
 
   def test_desvirada?
-    assert_equal(!@@carta.virada, @@carta.desvirada?)
+    assert_equal(true, @@carta.desvirada?)
   end
 
 end
