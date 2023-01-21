@@ -1,5 +1,8 @@
-require 'game'
-require 'player'
+require_relative 'game'
+require_relative 'player'
+require_relative 'card'
+require_relative 'creature'
+require_relative 'land'
 require 'colorize'
 
 puts 'Type player 1 name:'

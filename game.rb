@@ -1,9 +1,10 @@
-require 'creature'
-require 'land'
+require_relative 'card'
+require_relative 'creature'
+require_relative 'land'
+require_relative 'player'
+require_relative 'rules'
 require 'faker'
-require 'player'
 require 'colorize'
-require 'rules'
 
 # Classe para controlar ações principais do jogo
 class Game
@@ -133,6 +134,7 @@ class Game
       puts 'Invalid option'
       nil
     end
+    nil
   end
 
   def show_options
@@ -232,13 +234,17 @@ class Game
         @attacking_creatures << cards_hash[option] unless @attacking_creatures.include?(cards_hash[option])
         cards_hash[option].tapped = true
       when 'G'
-        show_blocking_options
+        if opponent.summoned_creatures.empty? || opponent.summoned_creatures.map(&:tapped?).all?
+          puts 'No creatures available to block'
+        else
+          show_blocking_options
+        end
       else
         @alerts << 'Invalid option'
         return
       end
     end
-
+    solve_combat
     nil
   end
 
@@ -255,19 +261,15 @@ class Game
         end
         letter.next!
       end
-      puts 'V - Go back'
       puts 'X - Finish blocking'
       puts 'Z - Clear selection'
       option = gets.chomp
       case option
-      when 'V', 'v'
-        @blocking_creatures = []
-        return
       when *cards_hash.keys
         @blocking_creatures << cards_hash[option] unless @blocking_creatures.include?(cards_hash[option])
         cards_hash[option].blocking = true
       when 'X', 'x'
-        solve_combat
+        return
       when 'Z', 'z'
         @blocking_creatures = []
         next
@@ -275,13 +277,13 @@ class Game
         raise 'Error in the blocking options'
       end
     end
-
     nil
   end
 
   def solve_combat
     @attacking_creatures.each_with_index do |attacking_creature, index|
       combat(attacking_creature, @blocking_creatures[index])
+      binding.break
     end
   end
 
@@ -294,7 +296,7 @@ class Game
     end
   end
 
-  def remove_creature
+  def clear_creature
     active_player.summoned_creatures.each do |creature|
       if creature.life_pts <= 0
         active_player.played_cards.delete(creature)
@@ -310,10 +312,13 @@ class Game
         creature.life_pts = creature.toughness
       end
     end
+
+    @attacking_creatures = []
+    @blocking_creatures = []
   end
 
   def finish_turn
-    remove_creature
+    clear_creature
     if player1.turn == true
       player1.turn = false
       player2.turn = true
