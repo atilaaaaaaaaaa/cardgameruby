@@ -22,7 +22,7 @@ class Game
   end
 
   def start
-    puts decide_player
+    # puts decide_player
     @player1.library.draw_card(7).each do |card|
       @player1.hand.push(card)
     end
@@ -134,7 +134,6 @@ class Game
       puts 'Invalid option'
       nil
     end
-    nil
   end
 
   def show_options
@@ -283,7 +282,6 @@ class Game
   def solve_combat
     @attacking_creatures.each_with_index do |attacking_creature, index|
       combat(attacking_creature, @blocking_creatures[index])
-      binding.break
     end
   end
 
