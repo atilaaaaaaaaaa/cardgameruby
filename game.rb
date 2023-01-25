@@ -19,6 +19,7 @@ class Game
     @alerts = []
     @attacking_creatures = []
     @blocking_creatures = []
+    @turn_pass = false
   end
 
   def start
@@ -65,9 +66,16 @@ class Game
     puts "#{aux_player.name} starts!"
   end
 
+  def initial_player=(player)
+    if player.name == player1.name
+      player1.turn = true
+    else
+      player2.turn = true
+    end
+  end
+
   def draw_card(amt = 1)
     active_player.hand.concat(active_player.library.draw_card(amt))
-
   end
 
   def active_player
@@ -141,7 +149,7 @@ class Game
     puts ''
     puts "turn #{active_player.name}"
     @options.each do |key, value|
-      puts "#{key} - #{value}"
+      puts "#{key} - #{value}" if active_player == player1
     end
     nil
   end
@@ -324,6 +332,7 @@ class Game
       player2.turn = false
       player1.turn = true
     end
+    
     opponent.untap_cards
 
     active_player.summoned_creatures.each do |creature|
