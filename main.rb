@@ -11,49 +11,44 @@ name = gets.chomp
 player1 = Player.new(name)
 player2 = nil
 
+game = Game.new(player1, nil)
+
 puts '1) Create game'
 puts '2) Join game'
 option = gets.chomp
 case option
 when '1'
-  server = TCPServer.open(2000)
+  # server = TCPServer.open(2000)
+  game.socket.start_server
 
-  serial_player1 = Marshal.dump(player1)
+  # serial_player1 = Marshal.dump(player1)
   loop do
-    client = server.accept
-    str = client.recv(5000)
-    serial_player2 = Marshal.load(str)
-    client.write(serial_player1)
+    game.socket.accept
+    serial_player2 = game.socket.server_get_obj
+    game.socket.server_send_obj(player1)
 
     player2 = serial_player2
-    game = Game.new(player1, player2)
+    game.player2 = player2
     game.decide_player
     actplay = game.active_player
-    actplayer = Marshal.dump(actplay)
-    client.write(actplayer)
+    game.socket.server_send_obj(actplay)
 
     puts "#{actplay.name} starts"
     game.start
   end
 when '2'
-  hostname = 'localhost'
-  port = 2000
-
-  s = TCPSocket.open(hostname, port)
+  game.socket.connect
 
   puts 'Connection established'
-  serial_player1 = Marshal.dump(player1)
+  # serial_player1 = Marshal.dump(player1)
 
   while true
-    s.puts(serial_player1)
-    str = s.recv(5000)
-    serial_player2 = Marshal.load(str)
+    game.socket.client_send_obj(player1)
+    serial_player2 = game.socket.client_get_obj
     player2 = serial_player2
+    game.player2 = player2
 
-    game = Game.new(player1, player2)
-
-    actplayer = s.recv(5000)
-    active_play = Marshal.load(actplayer)
+    active_play = game.socket.client_get_obj
     puts "#{active_play.name} starts"
     game.initial_player = active_play
     game.start

@@ -3,12 +3,13 @@ require_relative 'creature'
 require_relative 'land'
 require_relative 'player'
 require_relative 'rules'
+require_relative 'multiplayer'
 require 'faker'
 require 'colorize'
 
 # Classe para controlar ações principais do jogo
 class Game
-  attr_reader :player1, :player2, :cards
+  attr_accessor :player1, :player2, :cards, :socket
 
   amt_hand = 7
 
@@ -16,10 +17,12 @@ class Game
     @player1 = player1
     @player2 = player2
     @options = { 0 => :mulligan, 1 => :draw_card, 2 => :leave_game, 3 => :show_cards, 4 => :show_attack_options, 5 => :finish_turn }
+    @options2 = { 5 => :finish_turn }
     @alerts = []
     @attacking_creatures = []
     @blocking_creatures = []
     @turn_pass = false
+    @socket = Multiplayer.new('localhost', 2000)
   end
 
   def start
@@ -33,9 +36,16 @@ class Game
 
     until finished?
       show_table_v2
-      show_options
-      option = gets.chomp
-      select_option(option)
+      if player1.turn == true
+        show_options
+        option = gets.chomp
+        select_option(option)
+      else
+        show_options2
+        option = gets.chomp
+        select_option2(option)
+        @socket.client_get_obj
+      end
     end
     puts 'Game over.'
   end
@@ -149,8 +159,18 @@ class Game
     puts ''
     puts "turn #{active_player.name}"
     @options.each do |key, value|
-      puts "#{key} - #{value}" if active_player == player1
+      puts "#{key} - #{value}"
     end
+    nil
+  end
+
+  def wait_turn
+    puts 'Wait for your turn.'
+  end
+
+  def show_options2
+    puts ''
+    puts "It's #{active_player.name}'s turn, wait for yours."
     nil
   end
 
@@ -213,6 +233,14 @@ class Game
     puts option
     puts @options
     send(@options[option.to_i])
+    puts 'Selecting options...'
+    nil
+  end
+
+  def select_option2(option)
+    puts option
+    puts @options2
+    send(@options2[option.to_i])
     puts 'Selecting options...'
     nil
   end
@@ -324,7 +352,6 @@ class Game
   end
 
   def finish_turn
-    clear_creature
     if player1.turn == true
       player1.turn = false
       player2.turn = true
@@ -332,11 +359,15 @@ class Game
       player2.turn = false
       player1.turn = true
     end
-    
+
+    clear_creature
+    # turn_over
+
     opponent.untap_cards
 
     active_player.summoned_creatures.each do |creature|
       creature.sickness = false
     end
+    @socket.server_send_obj('5')
   end
 end
