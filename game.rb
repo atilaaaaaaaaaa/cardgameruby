@@ -42,9 +42,8 @@ class Game
         select_option(option)
       else
         show_options2
-        option = gets.chomp
-        select_option2(option)
-        @socket.client_get_obj
+        option = @socket.get_msg
+        send(option)
       end
     end
     puts 'Game over.'
@@ -351,7 +350,7 @@ class Game
     @blocking_creatures = []
   end
 
-  def finish_turn
+  def turn_over
     if player1.turn == true
       player1.turn = false
       player2.turn = true
@@ -359,15 +358,17 @@ class Game
       player2.turn = false
       player1.turn = true
     end
+  end
 
+  def finish_turn
     clear_creature
-    # turn_over
+    turn_over
 
     opponent.untap_cards
 
     active_player.summoned_creatures.each do |creature|
       creature.sickness = false
     end
-    @socket.server_send_obj('5')
+    @socket.send_msg('turn_over')
   end
 end
