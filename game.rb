@@ -26,7 +26,6 @@ class Game
   end
 
   def start
-    # puts decide_player
     @player1.library.draw_card(7).each do |card|
       @player1.hand.push(card)
     end
@@ -43,7 +42,8 @@ class Game
       else
         show_options2
         option = @socket.get_msg
-        send(option)
+        @player2 = option[:opponent]
+        send(option[:method])
       end
     end
     puts 'Game over.'
@@ -361,6 +361,7 @@ class Game
   end
 
   def finish_turn
+    binding.break
     clear_creature
     turn_over
 
@@ -369,6 +370,7 @@ class Game
     active_player.summoned_creatures.each do |creature|
       creature.sickness = false
     end
-    @socket.send_msg('turn_over')
+
+    @socket.send_msg({method: 'turn_over', opponent: @player1})
   end
 end
