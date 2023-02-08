@@ -42,8 +42,13 @@ class Game
       else
         show_options2
         option = @socket.get_msg
-        @player2 = option[:opponent]
+        if option == 'show_blocking_options'
+          show_blocking_options
+          option = @socket.get_msg
+        end
         send(option[:method])
+
+        @player2 = option[:opponent]
       end
     end
     puts 'Game over.'
@@ -257,9 +262,8 @@ class Game
         letter.next!
       end
       puts 'V - Cancel attack'
-      puts 'G - Finish attack'
+      puts 'G - Finish attack' unless cards_hash == {}
       option = gets.chomp
-
       case option
       when 'V'
         @attacking_creatures = []
@@ -271,7 +275,10 @@ class Game
         if opponent.summoned_creatures.empty? || opponent.summoned_creatures.map(&:tapped?).all?
           puts 'No creatures available to block'
         else
-          show_blocking_options
+          @socket.send_msg('show_blocking_options')
+          puts 'Wait for your opponent to block'
+          @socket.get_msg
+          # show_blocking_options
         end
       else
         @alerts << 'Invalid option'
@@ -303,7 +310,8 @@ class Game
         @blocking_creatures << cards_hash[option] unless @blocking_creatures.include?(cards_hash[option])
         cards_hash[option].blocking = true
       when 'X', 'x'
-        return
+        @socket.send_msg(@blocking_creatures)
+        # return
       when 'Z', 'z'
         @blocking_creatures = []
         next
@@ -315,6 +323,7 @@ class Game
   end
 
   def solve_combat
+    binding.break
     @attacking_creatures.each_with_index do |attacking_creature, index|
       combat(attacking_creature, @blocking_creatures[index])
     end
@@ -361,7 +370,6 @@ class Game
   end
 
   def finish_turn
-    binding.break
     clear_creature
     turn_over
 
@@ -371,6 +379,10 @@ class Game
       creature.sickness = false
     end
 
-    @socket.send_msg({method: 'turn_over', opponent: @player1})
+    opponent.summoned_creatures.each do |creature|
+      creature.sickness = false
+    end
+
+    @socket.send_msg({ method: 'turn_over', opponent: @player1 })
   end
 end
