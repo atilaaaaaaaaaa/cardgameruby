@@ -35,12 +35,11 @@ class Game
 
     until finished?
       show_table_v2
+      show_options
       if player1.turn == true
-        show_options
         option = gets.chomp
         select_option(option)
       else
-        show_options2
         option = @socket.get_msg
         if option == 'show_blocking_options'
           show_blocking_options
@@ -159,23 +158,22 @@ class Game
   end
 
   def show_options
-    puts 'Showing options...'
-    puts ''
-    puts "turn #{active_player.name}"
-    @options.each do |key, value|
-      puts "#{key} - #{value}"
+    if player1.turn == true
+      puts 'Showing options...'
+      puts ''
+      puts "turn #{active_player.name}"
+      @options.each do |key, value|
+        puts "#{key} - #{value}"
+      end
+    else
+      puts ''
+      puts "It's #{active_player.name}'s turn, wait for yours."
     end
     nil
   end
 
   def wait_turn
     puts 'Wait for your turn.'
-  end
-
-  def show_options2
-    puts ''
-    puts "It's #{active_player.name}'s turn, wait for yours."
-    nil
   end
 
   def print_lands_and_creatures(cards)
@@ -323,7 +321,6 @@ class Game
   end
 
   def solve_combat
-    binding.break
     @attacking_creatures.each_with_index do |attacking_creature, index|
       combat(attacking_creature, @blocking_creatures[index])
     end
